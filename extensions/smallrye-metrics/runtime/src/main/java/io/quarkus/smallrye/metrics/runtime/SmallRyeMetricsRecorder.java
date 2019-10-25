@@ -9,7 +9,9 @@ import java.lang.management.OperatingSystemMXBean;
 import java.lang.management.RuntimeMXBean;
 import java.lang.management.ThreadMXBean;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.function.Function;
 
 import javax.enterprise.inject.spi.BeanManager;
@@ -151,6 +153,39 @@ public class SmallRyeMetricsRecorder {
                 .notReusable()
                 .build();
         registry.register(metadata, reference, TagsUtils.parseTagsAsArray(tags));
+    }
+
+    public void registerMetric(MetricRegistry.Type scope,
+            MetadataHolder metadataHolder,
+            TagHolder[] tagHolders,
+            Callable<Number> callable,
+            ShutdownContext shutdown) {
+        Metadata metadata = metadataHolder.toMetadata();
+        Tag[] tags = Arrays.stream(tagHolders).map(TagHolder::toTag).toArray(Tag[]::new);
+        MetricRegistry registry = MetricRegistries.get(scope);
+
+        switch (metadata.getTypeRaw()) {
+            case GAUGE:
+                registry.register(metadata, new LambdaGauge(callable));
+                break;
+            case TIMER:
+                registry.timer(metadata, tags);
+                break;
+            case COUNTER:
+                registry.counter(metadata, tags);
+                break;
+            case HISTOGRAM:
+                registry.histogram(metadata, tags);
+                break;
+            case CONCURRENT_GAUGE:
+                registry.concurrentGauge(metadata, tags);
+                break;
+            case METERED:
+                registry.meter(metadata, tags);
+                break;
+        }
+        // TODO: perhaps this should be done once for multiple metrics, not for each separately
+        shutdown.addShutdownTask(() -> registry.remove(metadata.getName()));
     }
 
     public void createRegistries(BeanContainer container) {

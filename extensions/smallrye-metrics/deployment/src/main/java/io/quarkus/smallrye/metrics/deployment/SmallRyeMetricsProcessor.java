@@ -15,6 +15,7 @@ import static io.quarkus.smallrye.metrics.deployment.SmallRyeMetricsDotNames.MET
 import static io.quarkus.smallrye.metrics.deployment.SmallRyeMetricsDotNames.TIMER_INTERFACE;
 
 import java.lang.reflect.Modifier;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -60,7 +61,10 @@ import io.quarkus.runtime.annotations.ConfigItem;
 import io.quarkus.runtime.annotations.ConfigRoot;
 import io.quarkus.smallrye.metrics.deployment.jandex.JandexBeanInfoAdapter;
 import io.quarkus.smallrye.metrics.deployment.jandex.JandexMemberInfoAdapter;
+import io.quarkus.smallrye.metrics.deployment.spi.AdditionalMetricBuildItem;
+import io.quarkus.smallrye.metrics.runtime.MetadataHolder;
 import io.quarkus.smallrye.metrics.runtime.SmallRyeMetricsRecorder;
+import io.quarkus.smallrye.metrics.runtime.TagHolder;
 import io.quarkus.vertx.http.deployment.HttpRootPathBuildItem;
 import io.quarkus.vertx.http.deployment.RouteBuildItem;
 import io.quarkus.vertx.http.runtime.HandlerType;
@@ -358,6 +362,34 @@ public class SmallRyeMetricsProcessor {
                 }
             }
         }
+    }
+
+    /**
+     * Register metrics required by other Quarkus extensions.
+     */
+    @BuildStep
+    @Record(STATIC_INIT)
+    void extensionMetrics(SmallRyeMetricsRecorder recorder,
+            List<AdditionalMetricBuildItem> additionalMetrics,
+            ShutdownContextBuildItem shutdown,
+            BuildProducer<UnremovableBeanBuildItem> unremovableBeans) {
+        if (!additionalMetrics.isEmpty()) {
+            unremovableBeans.produce(new UnremovableBeanBuildItem(
+                    new UnremovableBeanBuildItem.BeanClassNameExclusion(MetricRegistry.class.getName())));
+            unremovableBeans.produce(new UnremovableBeanBuildItem(
+                    new UnremovableBeanBuildItem.BeanClassNameExclusion(MetricRegistries.class.getName())));
+        }
+        for (AdditionalMetricBuildItem additionalMetric : additionalMetrics) {
+            TagHolder[] tags = Arrays.stream(additionalMetric.getTags())
+                    .map(TagHolder::from)
+                    .toArray(TagHolder[]::new);
+            recorder.registerMetric(MetricRegistry.Type.VENDOR,
+                    MetadataHolder.from(additionalMetric.getMetadata()),
+                    tags,
+                    additionalMetric.getCallable(),
+                    shutdown);
+        }
+
     }
 
     /**
