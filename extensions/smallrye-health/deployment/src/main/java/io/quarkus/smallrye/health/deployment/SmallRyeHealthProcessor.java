@@ -8,6 +8,9 @@ import org.eclipse.microprofile.health.Health;
 import org.eclipse.microprofile.health.Liveness;
 import org.eclipse.microprofile.health.Readiness;
 import org.eclipse.microprofile.health.spi.HealthCheckResponseProvider;
+import org.eclipse.microprofile.metrics.Metadata;
+import org.eclipse.microprofile.metrics.MetricType;
+import org.eclipse.microprofile.metrics.Tag;
 import org.jboss.jandex.DotName;
 
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
@@ -24,10 +27,12 @@ import io.quarkus.kubernetes.spi.KubernetesHealthReadinessPathBuildItem;
 import io.quarkus.runtime.annotations.ConfigItem;
 import io.quarkus.runtime.annotations.ConfigRoot;
 import io.quarkus.smallrye.health.deployment.spi.HealthBuildItem;
+import io.quarkus.smallrye.health.runtime.RandomNumberGenerator;
 import io.quarkus.smallrye.health.runtime.SmallRyeHealthHandler;
 import io.quarkus.smallrye.health.runtime.SmallRyeHealthRecorder;
 import io.quarkus.smallrye.health.runtime.SmallRyeLivenessHandler;
 import io.quarkus.smallrye.health.runtime.SmallRyeReadinessHandler;
+import io.quarkus.smallrye.metrics.deployment.spi.AdditionalMetricBuildItem;
 import io.quarkus.vertx.http.deployment.RouteBuildItem;
 import io.quarkus.vertx.http.runtime.HandlerType;
 import io.smallrye.health.SmallRyeHealthReporter;
@@ -134,5 +139,19 @@ class SmallRyeHealthProcessor {
                 .produce(new KubernetesHealthLivenessPathBuildItem(health.rootPath + health.livenessPath));
         readinessPathItemProducer
                 .produce(new KubernetesHealthReadinessPathBuildItem(health.rootPath + health.readinessPath));
+    }
+
+    @BuildStep
+    @Record(ExecutionTime.STATIC_INIT)
+    public void additionalMetrics(BuildProducer<AdditionalMetricBuildItem> metrics,
+            SmallRyeHealthRecorder recorder) {
+        Metadata metadata = Metadata.builder().withType(MetricType.COUNTER).withName("checks").build();
+        metrics.produce(new AdditionalMetricBuildItem(metadata, new Tag("type", "health")));
+        metrics.produce(new AdditionalMetricBuildItem(metadata, new Tag("type", "liveness")));
+        metrics.produce(new AdditionalMetricBuildItem(metadata, new Tag("type", "readiness")));
+
+        Metadata metadataGauge = Metadata.builder().withType(MetricType.GAUGE).withName("randomnumber").build();
+        metrics.produce(new AdditionalMetricBuildItem(metadataGauge,
+                new RandomNumberGenerator()));
     }
 }

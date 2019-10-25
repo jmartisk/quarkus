@@ -4,9 +4,14 @@ import java.io.ByteArrayOutputStream;
 
 import javax.enterprise.inject.spi.CDI;
 
+import org.eclipse.microprofile.metrics.Counter;
+import org.eclipse.microprofile.metrics.MetricRegistry;
+import org.eclipse.microprofile.metrics.Tag;
+
 import io.quarkus.arc.Arc;
 import io.smallrye.health.SmallRyeHealth;
 import io.smallrye.health.SmallRyeHealthReporter;
+import io.smallrye.metrics.MetricRegistries;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpHeaders;
@@ -18,6 +23,14 @@ public class SmallRyeHealthHandler implements Handler<RoutingContext> {
 
     @Override
     public void handle(RoutingContext event) {
+        try {
+            // check whether metrics extension is available
+            Class.forName("io.quarkus.smallrye.metrics.runtime.SmallRyeMetricsHandler");
+            Counter counter = MetricRegistries.get(MetricRegistry.Type.VENDOR).counter("checks", new Tag("type", "health"));
+            counter.inc();
+        } catch (ClassNotFoundException e) {
+        }
+
         boolean activated = RequestScopeHelper.activeRequestScope();
 
         try {
