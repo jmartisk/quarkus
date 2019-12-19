@@ -87,6 +87,7 @@
         <module>mongodb-client</module>
         <module>artemis-core</module>
         <module>artemis-jms</module>
+        <module>jberet</module>
 
         <!-- Spring -->
         <module>spring-di</module>

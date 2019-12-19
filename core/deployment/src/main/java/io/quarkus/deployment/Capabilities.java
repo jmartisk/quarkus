@@ -13,6 +13,7 @@ public final class Capabilities extends SimpleBuildItem {
     public static final String SERVLET = "io.quarkus.servlet";
     public static final String TRANSACTIONS = "io.quarkus.transactions";
     public static final String JACKSON = "io.quarkus.jackson";
+    public static final String JBERET = "io.quarkus.jberet";
     public static final String JSONB = "io.quarkus.jsonb";
     public static final String RESTEASY_JSON_EXTENSION = "io.quarkus.resteasy-json";
     public static final String RESTEASY = "io.quarkus.resteasy";
