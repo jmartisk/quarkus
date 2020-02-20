@@ -43,6 +43,7 @@ import io.smallrye.metrics.MetricRegistries;
 import io.smallrye.metrics.TagsUtils;
 import io.smallrye.metrics.elementdesc.BeanInfo;
 import io.smallrye.metrics.elementdesc.MemberInfo;
+import io.smallrye.metrics.interceptors.MetricMap;
 import io.smallrye.metrics.interceptors.MetricResolver;
 import io.smallrye.metrics.setup.MetricsMetadata;
 import io.vertx.ext.web.Route;
@@ -96,6 +97,12 @@ public class SmallRyeMetricsRecorder {
         SmallRyeMetricsHandler handler = new SmallRyeMetricsHandler();
         handler.setMetricsPath(metricsPath);
         return handler;
+    }
+
+    public void dropMetricMapAtShutdown(ShutdownContext shutdown) {
+        shutdown.addShutdownTask(() -> {
+            MetricMap.getInstance().clear();
+        });
     }
 
     public void registerVendorMetrics(ShutdownContext shutdown) {

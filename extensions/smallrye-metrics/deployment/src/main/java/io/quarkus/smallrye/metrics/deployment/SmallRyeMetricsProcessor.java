@@ -379,6 +379,13 @@ public class SmallRyeMetricsProcessor {
 
     @BuildStep
     @Record(RUNTIME_INIT)
+    void dropMetricMapAtShutdown(SmallRyeMetricsRecorder recorder,
+            ShutdownContextBuildItem shutdown) {
+        recorder.dropMetricMapAtShutdown(shutdown);
+    }
+
+    @BuildStep
+    @Record(RUNTIME_INIT)
     void registerMetricsFromProducers(
             SmallRyeMetricsRecorder recorder,
             ValidationPhaseBuildItem validationPhase,
