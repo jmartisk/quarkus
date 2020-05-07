@@ -24,6 +24,7 @@ import org.jboss.logging.Logger;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.deployment.BeanContainerBuildItem;
 import io.quarkus.arc.deployment.BeanDefiningAnnotationBuildItem;
+import io.quarkus.deployment.Capabilities;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.annotations.ExecutionTime;
@@ -34,6 +35,7 @@ import io.quarkus.deployment.builditem.GeneratedResourceBuildItem;
 import io.quarkus.deployment.builditem.LaunchModeBuildItem;
 import io.quarkus.deployment.builditem.LiveReloadBuildItem;
 import io.quarkus.deployment.builditem.ShutdownContextBuildItem;
+import io.quarkus.deployment.builditem.SystemPropertyBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.NativeImageResourceBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ServiceProviderBuildItem;
@@ -178,6 +180,14 @@ public class SmallryeGraphqlProcessor {
         // Because we need to read the body
         requireBodyHandlerProducer.produce(new RequireBodyHandlerBuildItem());
 
+    }
+
+    @BuildStep
+    void openTracingIntegration(Capabilities capabilities,
+            BuildProducer<SystemPropertyBuildItem> properties) {
+        if (capabilities.isCapabilityPresent(Capabilities.SMALLRYE_OPENTRACING)) {
+            properties.produce(new SystemPropertyBuildItem("smallrye.graphql.tracing.enabled", "true"));
+        }
     }
 
     private String[] getClassesToRegisterForReflection(Schema schema) {

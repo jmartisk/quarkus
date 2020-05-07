@@ -48,7 +48,7 @@
             <groupId>io.smallrye</groupId>
             <artifactId>smallrye-graphql-ui-graphiql</artifactId>
         </dependency>
-        
+
         <!--  Test dependencies -->
         <dependency>
             <groupId>io.quarkus</groupId>
@@ -58,6 +58,11 @@
         <dependency>
             <groupId>io.rest-assured</groupId>
             <artifactId>rest-assured</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-opentracing</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
