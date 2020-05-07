@@ -57,7 +57,6 @@ import io.smallrye.graphql.schema.model.Operation;
 import io.smallrye.graphql.schema.model.Reference;
 import io.smallrye.graphql.schema.model.Schema;
 import io.smallrye.graphql.spi.LookupService;
-import io.smallrye.graphql.spi.MetricsService;
 import io.vertx.core.Handler;
 import io.vertx.ext.web.RoutingContext;
 
@@ -80,7 +79,7 @@ public class SmallryeGraphqlProcessor {
     private static final String TEMP_DIR_PREFIX = "quarkus-graphql-ui_" + System.nanoTime();
     private static final List<String> IGNORE_LIST = Arrays.asList(new String[] { "logo.png", "favicon.ico" });
     private static final String FILE_TO_UPDATE = "render.js";
-    
+
     SmallRyeGraphQLConfig quarkusConfig;
 
     @BuildStep
@@ -110,13 +109,6 @@ public class SmallryeGraphqlProcessor {
                 lookupService);
         serviceProvider.produce(
                 new ServiceProviderBuildItem(LookupService.class.getName(), lookupImplementations.toArray(new String[0])));
-
-        // Metrics (We use the one from the CDI Module)
-        String metricsService = SPI_PATH + MetricsService.class.getName();
-        Set<String> metricsImplementations = ServiceUtil.classNamesNamedIn(Thread.currentThread().getContextClassLoader(),
-                metricsService);
-        serviceProvider.produce(
-                new ServiceProviderBuildItem(MetricsService.class.getName(), metricsImplementations.toArray(new String[0])));
     }
 
     @Record(ExecutionTime.STATIC_INIT)

@@ -26,7 +26,7 @@ public class SmallRyeGraphQLExecutionHandler implements Handler<RoutingContext> 
     private static boolean allowGet = false;
     private static final String QUERY = "query";
     private static final String OK = "OK";
-    
+
     public SmallRyeGraphQLExecutionHandler(boolean allowGet) {
         this.allowGet = allowGet;
     }
