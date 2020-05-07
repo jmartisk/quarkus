@@ -2,7 +2,7 @@ package io.quarkus.smallrye.graphql.runtime;
 
 import java.util.function.Supplier;
 
-import io.quarkus.arc.Arc;
+import io.quarkus.arc.runtime.BeanContainer;
 import io.quarkus.runtime.ShutdownContext;
 import io.quarkus.runtime.annotations.Recorder;
 import io.quarkus.smallrye.graphql.runtime.spi.QuarkusClassloadingService;
@@ -17,12 +17,8 @@ import io.vertx.ext.web.handler.StaticHandler;
 @Recorder
 public class SmallRyeGraphQLRecorder {
 
-    public void createExecutionService(Schema schema) {
-        Arc.initialize(); // FIXME: why do I need this?
-        GraphQLProducer graphQLProducer = Arc.container()
-                .instance(GraphQLProducer.class)
-                .get();
-
+    public void createExecutionService(BeanContainer beanContainer, Class<GraphQLProducer> beanClass, Schema schema) {
+        GraphQLProducer graphQLProducer = beanContainer.instance(beanClass);
         graphQLProducer.setSchema(schema);
         graphQLProducer.initialize();
     }

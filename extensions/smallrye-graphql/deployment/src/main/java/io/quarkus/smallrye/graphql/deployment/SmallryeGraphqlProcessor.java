@@ -22,6 +22,7 @@ import org.jboss.jandex.IndexView;
 import org.jboss.logging.Logger;
 
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
+import io.quarkus.arc.deployment.BeanContainerBuildItem;
 import io.quarkus.arc.deployment.BeanDefiningAnnotationBuildItem;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
@@ -65,6 +66,7 @@ import io.vertx.ext.web.RoutingContext;
  * We scan all annotations and build the model during build.
  */
 public class SmallryeGraphqlProcessor {
+    private static final Logger log = Logger.getLogger(SmallryeGraphqlProcessor.class);
 
     private static final Logger LOG = Logger.getLogger(SmallryeGraphqlProcessor.class.getName());
     private static final String SCHEMA_PATH = "/schema.graphql";
@@ -115,15 +117,23 @@ public class SmallryeGraphqlProcessor {
     @BuildStep
     void buildExecutionService(BuildProducer<ReflectiveClassBuildItem> reflectiveClassProducer,
             SmallRyeGraphQLRecorder recorder,
+            BeanContainerBuildItem beanContainer,
             CombinedIndexBuildItem combinedIndex) {
 
         IndexView index = combinedIndex.getIndex();
         Schema schema = SchemaBuilder.build(index);
 
+        try {
+            Class<GraphQLProducer> beanClass = (Class<GraphQLProducer>) Class
+                    .forName(GraphQLProducer.class.getName());
+            recorder.createExecutionService(beanContainer.getValue(), beanClass, schema);
+        } catch (ClassNotFoundException ex) {
+            log.warn("Failed to load GraphQLProducer", ex);
+        }
+
+        // Make sure the complex object from the application can work in native mode
         reflectiveClassProducer
                 .produce(new ReflectiveClassBuildItem(true, true, getClassesToRegisterForReflection(schema)));
-
-        recorder.createExecutionService(schema);
     }
 
     @Record(ExecutionTime.STATIC_INIT)
