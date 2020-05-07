@@ -35,14 +35,14 @@
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-smallrye-graphql</artifactId>
         </dependency>
-        
-         <dependency>
+
+        <dependency>
             <groupId>org.eclipse.microprofile.graphql</groupId>
             <artifactId>microprofile-graphql-tck</artifactId>
-            <version>${microprofile-graphql.version}</version>
+            <version>${microprofile-graphql-api.version}</version>
             <scope>provided</scope>
         </dependency>
-    
+
     </dependencies>
 
 </project>

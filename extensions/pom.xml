@@ -161,9 +161,9 @@
         <!-- Vault -->
         <module>vault</module>
 
-	<!-- GraphQL -->
+        <!-- GraphQL -->
         <module>vertx-graphql</module>
-	<module>smallrye-graphql</module>
+        <module>smallrye-graphql</module>
 
         <!-- Logging -->
         <module>logging-json</module>

@@ -21,12 +21,12 @@ import io.vertx.ext.web.RoutingContext;
 
 /**
  * Handler that does the execution of GraphQL Requests
- * 
- * @author Phillip Kruger (phillip.kruger@redhat.com)
  */
 public class SmallRyeGraphQLExecutionHandler implements Handler<RoutingContext> {
     private static boolean allowGet = false;
-
+    private static final String QUERY = "query";
+    private static final String OK = "OK";
+    
     public SmallRyeGraphQLExecutionHandler(boolean allowGet) {
         this.allowGet = allowGet;
     }
@@ -101,8 +101,4 @@ public class SmallRyeGraphQLExecutionHandler implements Handler<RoutingContext> 
             throw new RuntimeException(ex);
         }
     }
-
-    private static final String QUERY = "query";
-    private static final String OK = "OK";
-
 }

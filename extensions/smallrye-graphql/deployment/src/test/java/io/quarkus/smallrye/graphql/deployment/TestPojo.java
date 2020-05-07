@@ -5,8 +5,6 @@ import java.util.List;
 
 /**
  * Just a test pojo
- * 
- * @author Phillip Kruger (phillip.kruger@redhat.com)
  */
 public class TestPojo {
     private String message;

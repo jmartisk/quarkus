@@ -14,11 +14,6 @@ import io.vertx.core.http.HttpHeaders;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.StaticHandler;
 
-/**
- * Recorder
- * 
- * @author Phillip Kruger (phillip.kruger@redhat.com)
- */
 @Recorder
 public class SmallRyeGraphQLRecorder {
 

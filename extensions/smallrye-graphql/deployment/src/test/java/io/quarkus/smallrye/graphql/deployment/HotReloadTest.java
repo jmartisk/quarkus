@@ -12,8 +12,6 @@ import io.quarkus.test.QuarkusDevModeTest;
 
 /**
  * Test Hot reload after a code change
- * 
- * @author Phillip Kruger (phillip.kruger@redhat.com)
  */
 public class HotReloadTest extends AbstractGraphQLTest {
 

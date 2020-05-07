@@ -8,8 +8,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 
 /**
  * Creates the deployable unit with all the needed dependencies.
- * 
- * @author Phillip Kruger (phillip.kruger@redhat.com)
  */
 public class GraphQLArchiveProcessor implements ApplicationArchiveProcessor {
     private static final Logger LOG = Logger.getLogger(GraphQLArchiveProcessor.class.getName());

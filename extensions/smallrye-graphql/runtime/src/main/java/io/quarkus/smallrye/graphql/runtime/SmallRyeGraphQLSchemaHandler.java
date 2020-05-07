@@ -14,8 +14,6 @@ import io.vertx.ext.web.RoutingContext;
 
 /**
  * Handler that return the generated schema
- * 
- * @author Phillip Kruger (phillip.kruger@redhat.com)
  */
 public class SmallRyeGraphQLSchemaHandler implements Handler<RoutingContext> {
     private static final String ALLOWED_METHODS = "GET, OPTIONS";

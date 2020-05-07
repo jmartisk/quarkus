@@ -2,8 +2,6 @@ package io.quarkus.smallrye.graphql.deployment;
 
 /**
  * Just a test pojo that contains a random number
- * 
- * @author Phillip Kruger (phillip.kruger@redhat.com)
  */
 public class TestRandom {
     private double value;

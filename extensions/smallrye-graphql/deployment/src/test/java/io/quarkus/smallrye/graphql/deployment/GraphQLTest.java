@@ -17,8 +17,6 @@ import io.restassured.specification.RequestSpecification;
 
 /**
  * Basic tests. POST
- * 
- * @author Phillip Kruger (phillip.kruger@redhat.com)
  */
 public class GraphQLTest extends AbstractGraphQLTest {
 

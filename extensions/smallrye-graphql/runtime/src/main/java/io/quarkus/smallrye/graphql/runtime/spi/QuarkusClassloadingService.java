@@ -11,8 +11,6 @@ import io.smallrye.graphql.spi.ClassloadingService;
 /**
  * Quarkus specific classloading service, that allows
  * hot reloading to work in dev mode.
- * 
- * @author Phillip Kruger (phillip.kruger@redhat.com)
  */
 public class QuarkusClassloadingService implements ClassloadingService {
 

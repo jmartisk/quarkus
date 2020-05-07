@@ -17,8 +17,6 @@ import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-import javax.inject.Inject;
-
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.jboss.jandex.IndexView;
 import org.jboss.logging.Logger;
@@ -44,8 +42,6 @@ import io.quarkus.deployment.index.ResolvedArtifact;
 import io.quarkus.deployment.util.FileUtil;
 import io.quarkus.deployment.util.ServiceUtil;
 import io.quarkus.runtime.LaunchMode;
-import io.quarkus.runtime.annotations.ConfigItem;
-import io.quarkus.runtime.annotations.ConfigRoot;
 import io.quarkus.smallrye.graphql.runtime.SmallRyeGraphQLRecorder;
 import io.quarkus.vertx.http.deployment.HttpRootPathBuildItem;
 import io.quarkus.vertx.http.deployment.RequireBodyHandlerBuildItem;
@@ -68,8 +64,6 @@ import io.vertx.ext.web.RoutingContext;
 /**
  * Processor for Smallrye GraphQL.
  * We scan all annotations and build the model during build.
- * 
- * @author Phillip Kruger (phillip.kruger@redhat.com)
  */
 public class SmallryeGraphqlProcessor {
 
@@ -77,43 +71,17 @@ public class SmallryeGraphqlProcessor {
     private static final String SCHEMA_PATH = "/schema.graphql";
     private static final String SPI_PATH = "META-INF/services/";
 
-    @Inject
-    private LaunchModeBuildItem launchMode;
-
-    /**
-     * The configuration
-     */
+    // For the UI
+    private static final String GRAPHQL_UI_WEBJAR_GROUP_ID = "io.smallrye";
+    private static final String GRAPHQL_UI_WEBJAR_ARTIFACT_ID = "smallrye-graphql-ui-graphiql";
+    private static final String GRAPHQL_UI_WEBJAR_PREFIX = "META-INF/resources/graphql-ui";
+    private static final String OWN_MEDIA_FOLDER = "META-INF/resources/";
+    private static final String GRAPHQL_UI_FINAL_DESTINATION = "META-INF/graphql-ui-files";
+    private static final String TEMP_DIR_PREFIX = "quarkus-graphql-ui_" + System.nanoTime();
+    private static final List<String> IGNORE_LIST = Arrays.asList(new String[] { "logo.png", "favicon.ico" });
+    private static final String FILE_TO_UPDATE = "render.js";
+    
     SmallRyeGraphQLConfig quarkusConfig;
-
-    @ConfigRoot(name = "smallrye-graphql")
-    static final class SmallRyeGraphQLConfig {
-        /**
-         * The rootPath under which queries will be served. Default to /graphql
-         */
-        @ConfigItem(defaultValue = "/graphql")
-        String rootPath;
-
-        /**
-         * The path where GraphQL UI is available.
-         * <p>
-         * The value `/` is not allowed as it blocks the application from serving anything else.
-         */
-        @ConfigItem(defaultValue = "/graphql-ui")
-        String rootPathUi;
-
-        /**
-         * Always include the UI. By default this will only be included in dev and test.
-         * Setting this to true will also include the UI in Prod
-         */
-        @ConfigItem(defaultValue = "false")
-        boolean alwaysIncludeUi;
-
-        /**
-         * If GraphQL UI should be enabled. By default, GraphQL UI is enabled.
-         */
-        @ConfigItem(defaultValue = "true")
-        boolean enableUi;
-    }
 
     @BuildStep
     void feature(BuildProducer<FeatureBuildItem> featureProducer) {
@@ -172,7 +140,7 @@ public class SmallryeGraphqlProcessor {
             BuildProducer<RequireBodyHandlerBuildItem> requireBodyHandlerProducer,
             BuildProducer<RouteBuildItem> routeProducer,
             BuildProducer<NotFoundPageDisplayableEndpointBuildItem> notFoundPageDisplayableEndpointProducer,
-            //BuildProducer<ExtensionSslNativeSupportBuildItem> extensionSslNativeSupportProducer,
+            LaunchModeBuildItem launchMode,
             SmallRyeGraphQLRecorder recorder,
             ShutdownContextBuildItem shutdownContext) throws IOException {
 
@@ -208,8 +176,6 @@ public class SmallryeGraphqlProcessor {
         // Because we need to read the body
         requireBodyHandlerProducer.produce(new RequireBodyHandlerBuildItem());
 
-        // TODO: SSL Support by default ?
-        // extensionSslNativeSupportProducer.produce(new ExtensionSslNativeSupportBuildItem(FeatureBuildItem.SMALLRYE_GRAPHQL));
     }
 
     private String[] getClassesToRegisterForReflection(Schema schema) {
@@ -221,13 +187,6 @@ public class SmallryeGraphqlProcessor {
         classes.addAll(getReferenceClassNames(schema.getTypes().values()));
         classes.addAll(getReferenceClassNames(schema.getInputs().values()));
         classes.addAll(getReferenceClassNames(schema.getInterfaces().values()));
-
-        // TODO: Introspection classes. (In native mode, the graphiQL introspection query fails. Below is not working)
-//        classes.add(GraphQLObjectType.class.getName());
-//        classes.add(GraphQLInputObjectType.class.getName());
-//        classes.add(GraphQLEnumType.class.getName());
-//        classes.add(GraphQLInputObjectField.class.getName());
-//        classes.add(GraphQLInterfaceType.class.getName());
 
         String[] arrayOfClassNames = classes.toArray(new String[] {});
         return arrayOfClassNames;
@@ -250,16 +209,6 @@ public class SmallryeGraphqlProcessor {
         return classes;
     }
 
-    // For the UI
-    private static final String GRAPHQL_UI_WEBJAR_GROUP_ID = "io.smallrye";
-    private static final String GRAPHQL_UI_WEBJAR_ARTIFACT_ID = "smallrye-graphql-ui-graphiql";
-    private static final String GRAPHQL_UI_WEBJAR_PREFIX = "META-INF/resources/graphql-ui";
-    private static final String OWN_MEDIA_FOLDER = "META-INF/resources/";
-    private static final String GRAPHQL_UI_FINAL_DESTINATION = "META-INF/graphql-ui-files";
-    private static final String TEMP_DIR_PREFIX = "quarkus-graphql-ui_" + System.nanoTime();
-    private static final List<String> IGNORE_LIST = Arrays.asList(new String[] { "logo.png", "favicon.ico" });
-    private static final String FILE_TO_UPDATE = "render.js";
-
     @BuildStep
     @Record(ExecutionTime.STATIC_INIT)
     void registerGraphQLUiServletExtension(
@@ -268,6 +217,7 @@ public class SmallryeGraphqlProcessor {
             BuildProducer<NativeImageResourceBuildItem> nativeImageResourceProducer,
             BuildProducer<NotFoundPageDisplayableEndpointBuildItem> notFoundPageDisplayableEndpointProducer,
             SmallRyeGraphQLRecorder recorder,
+            LaunchModeBuildItem launchMode,
             LiveReloadBuildItem liveReload,
             HttpRootPathBuildItem httpRootPath) throws Exception {
 

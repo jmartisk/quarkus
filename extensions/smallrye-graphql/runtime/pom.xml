@@ -12,15 +12,12 @@
 
     <artifactId>quarkus-smallrye-graphql</artifactId>
     <name>Quarkus - SmallRye GraphQL - Runtime</name>
-
+    <description>Create GraphQL Endpoints using the code-first approach from MicroProfile GraphQL</description>
+        
     <dependencies>
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-vertx-http</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-jsonp</artifactId>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>

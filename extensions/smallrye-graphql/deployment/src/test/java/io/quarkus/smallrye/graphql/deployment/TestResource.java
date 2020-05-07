@@ -7,8 +7,6 @@ import org.eclipse.microprofile.graphql.Source;
 
 /**
  * Just a test endpoint
- * 
- * @author Phillip Kruger (phillip.kruger@redhat.com)
  */
 @GraphQLApi
 public class TestResource {

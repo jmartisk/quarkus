@@ -13,8 +13,6 @@ import io.restassured.RestAssured;
 
 /**
  * Some shared methods
- * 
- * @author Phillip Kruger (phillip.kruger@redhat.com)
  */
 public abstract class AbstractGraphQLTest {
 
