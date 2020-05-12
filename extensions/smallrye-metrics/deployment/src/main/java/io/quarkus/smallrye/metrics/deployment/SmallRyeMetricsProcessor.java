@@ -434,6 +434,9 @@ public class SmallRyeMetricsProcessor {
                     MethodInfo method = target.asMethod();
                     metricAnnotation = method.annotation(METRIC);
                     memberName = method.name();
+                    if (method.parameters().contains(Type.create(DotNames.INJECTION_POINT, Type.Kind.CLASS))) {
+                        continue;
+                    }
                 }
                 if (metricAnnotation != null) {
                     String nameValue = metricAnnotation.valueWithDefault(index, "name").asString();
