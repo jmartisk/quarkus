@@ -29,7 +29,7 @@
         <threetenbp.version>1.4.3</threetenbp.version>
         <micrometer.version>1.5.6</micrometer.version>
         <microprofile-config-api.version>1.4</microprofile-config-api.version>
-        <microprofile-metrics-api.version>2.3</microprofile-metrics-api.version>
+        <microprofile-metrics-api.version>3.0-RC2</microprofile-metrics-api.version>
         <microprofile-context-propagation.version>1.0.1</microprofile-context-propagation.version>
         <microprofile-opentracing-api.version>1.3.3</microprofile-opentracing-api.version>
         <microprofile-reactive-streams-operators.version>1.0.1</microprofile-reactive-streams-operators.version>
@@ -37,7 +37,7 @@
         <smallrye-common.version>1.4.1</smallrye-common.version>
         <smallrye-config.version>1.9.3</smallrye-config.version>
         <smallrye-health.version>2.2.5</smallrye-health.version>
-        <smallrye-metrics.version>2.4.4</smallrye-metrics.version>
+        <smallrye-metrics.version>3.0.0-SNAPSHOT</smallrye-metrics.version>
         <smallrye-open-api.version>2.0.13</smallrye-open-api.version>
         <smallrye-graphql.version>1.0.14</smallrye-graphql.version>
         <smallrye-opentracing.version>1.3.4</smallrye-opentracing.version>
