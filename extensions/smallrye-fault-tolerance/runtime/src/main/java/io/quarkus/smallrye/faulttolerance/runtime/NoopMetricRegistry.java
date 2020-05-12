@@ -6,7 +6,7 @@ import java.util.SortedSet;
 
 import org.eclipse.microprofile.metrics.*;
 
-public class NoopMetricRegistry extends MetricRegistry {
+public class NoopMetricRegistry implements MetricRegistry {
 
     @Override
     public <T extends Metric> T register(String s, T t) throws IllegalArgumentException {
@@ -34,6 +34,11 @@ public class NoopMetricRegistry extends MetricRegistry {
     }
 
     @Override
+    public Counter counter(MetricID metricID) {
+        return null;
+    }
+
+    @Override
     public Counter counter(Metadata metadata) {
         return null;
     }
@@ -54,6 +59,11 @@ public class NoopMetricRegistry extends MetricRegistry {
     }
 
     @Override
+    public ConcurrentGauge concurrentGauge(MetricID metricID) {
+        return null;
+    }
+
+    @Override
     public ConcurrentGauge concurrentGauge(Metadata metadata) {
         return null;
     }
@@ -64,12 +74,32 @@ public class NoopMetricRegistry extends MetricRegistry {
     }
 
     @Override
+    public Gauge<?> gauge(String name, Gauge<?> gauge) {
+        return null;
+    }
+
+    @Override
+    public Gauge<?> gauge(String name, Gauge<?> gauge, Tag... tags) {
+        return null;
+    }
+
+    @Override
+    public Gauge<?> gauge(MetricID metricID, Gauge<?> gauge) {
+        return null;
+    }
+
+    @Override
     public Histogram histogram(String s) {
         return null;
     }
 
     @Override
     public Histogram histogram(String s, Tag... tags) {
+        return null;
+    }
+
+    @Override
+    public Histogram histogram(MetricID metricID) {
         return null;
     }
 
@@ -94,6 +124,11 @@ public class NoopMetricRegistry extends MetricRegistry {
     }
 
     @Override
+    public Meter meter(MetricID metricID) {
+        return null;
+    }
+
+    @Override
     public Meter meter(Metadata metadata) {
         return null;
     }
@@ -110,6 +145,11 @@ public class NoopMetricRegistry extends MetricRegistry {
 
     @Override
     public Timer timer(String s, Tag... tags) {
+        return null;
+    }
+
+    @Override
+    public Timer timer(MetricID metricID) {
         return null;
     }
 
@@ -134,12 +174,67 @@ public class NoopMetricRegistry extends MetricRegistry {
     }
 
     @Override
+    public SimpleTimer simpleTimer(MetricID metricID) {
+        return null;
+    }
+
+    @Override
     public SimpleTimer simpleTimer(Metadata metadata) {
         return null;
     }
 
     @Override
     public SimpleTimer simpleTimer(Metadata metadata, Tag... tags) {
+        return null;
+    }
+
+    @Override
+    public Metric getMetric(MetricID metricID) {
+        return null;
+    }
+
+    @Override
+    public <T extends Metric> T getMetric(MetricID metricID, Class<T> asType) {
+        return null;
+    }
+
+    @Override
+    public Counter getCounter(MetricID metricID) {
+        return null;
+    }
+
+    @Override
+    public ConcurrentGauge getConcurrentGauge(MetricID metricID) {
+        return null;
+    }
+
+    @Override
+    public Gauge<?> getGauge(MetricID metricID) {
+        return null;
+    }
+
+    @Override
+    public Histogram getHistogram(MetricID metricID) {
+        return null;
+    }
+
+    @Override
+    public Meter getMeter(MetricID metricID) {
+        return null;
+    }
+
+    @Override
+    public Timer getTimer(MetricID metricID) {
+        return null;
+    }
+
+    @Override
+    public SimpleTimer getSimpleTimer(MetricID metricID) {
+        return null;
+    }
+
+    @Override
+    public Metadata getMetadata(String name) {
         return null;
     }
 
@@ -239,12 +334,27 @@ public class NoopMetricRegistry extends MetricRegistry {
     }
 
     @Override
+    public SortedMap<MetricID, Metric> getMetrics(MetricFilter filter) {
+        return null;
+    }
+
+    @Override
+    public <T extends Metric> SortedMap<MetricID, T> getMetrics(Class<T> ofType, MetricFilter filter) {
+        return null;
+    }
+
+    @Override
     public Map<MetricID, Metric> getMetrics() {
         return null;
     }
 
     @Override
     public Map<String, Metadata> getMetadata() {
+        return null;
+    }
+
+    @Override
+    public Type getType() {
         return null;
     }
 }

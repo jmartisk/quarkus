@@ -82,10 +82,10 @@ import io.smallrye.metrics.MetricsRequestHandler;
 import io.smallrye.metrics.elementdesc.BeanInfo;
 import io.smallrye.metrics.interceptors.ConcurrentGaugeInterceptor;
 import io.smallrye.metrics.interceptors.CountedInterceptor;
+import io.smallrye.metrics.interceptors.GaugeRegistrationInterceptor;
 import io.smallrye.metrics.interceptors.MeteredInterceptor;
 import io.smallrye.metrics.interceptors.MetricNameFactory;
 import io.smallrye.metrics.interceptors.MetricsBinding;
-import io.smallrye.metrics.interceptors.MetricsInterceptor;
 import io.smallrye.metrics.interceptors.SimplyTimedInterceptor;
 import io.smallrye.metrics.interceptors.TimedInterceptor;
 import io.vertx.ext.web.Route;
@@ -146,7 +146,7 @@ public class SmallRyeMetricsProcessor {
         additionalBeans.produce(new AdditionalBeanBuildItem(MetricProducer.class,
                 MetricNameFactory.class,
                 MetricRegistries.class,
-                MetricsInterceptor.class,
+                GaugeRegistrationInterceptor.class,
                 MeteredInterceptor.class,
                 ConcurrentGaugeInterceptor.class,
                 CountedInterceptor.class,
@@ -217,7 +217,8 @@ public class SmallRyeMetricsProcessor {
                 // skip classes in package io.smallrye.metrics.interceptors
                 ClassInfo clazz = context.getTarget().asClass();
                 if (clazz.name().toString()
-                        .startsWith(io.smallrye.metrics.interceptors.MetricsInterceptor.class.getPackage().getName())) {
+                        .startsWith(
+                                io.smallrye.metrics.interceptors.GaugeRegistrationInterceptor.class.getPackage().getName())) {
                     return;
                 }
                 if (clazz.annotations().containsKey(GAUGE)) {

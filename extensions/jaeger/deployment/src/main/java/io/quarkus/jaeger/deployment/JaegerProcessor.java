@@ -98,7 +98,6 @@ public class JaegerProcessor {
                 .withType(type)
                 .withUnit("none")
                 .withDescription(name)
-                .reusable()
                 .build();
         if (implementor == null) {
             return new MetricBuildItem(metadata, true, "jaeger", tags);
