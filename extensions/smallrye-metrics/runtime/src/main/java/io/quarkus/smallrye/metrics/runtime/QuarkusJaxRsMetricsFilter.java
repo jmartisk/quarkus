@@ -25,6 +25,8 @@ import java.util.stream.Collectors;
 import javax.enterprise.inject.spi.CDI;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
+import javax.ws.rs.container.ContainerResponseContext;
+import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.container.ResourceInfo;
 import javax.ws.rs.core.Context;
 
@@ -42,7 +44,7 @@ import io.vertx.ext.web.RoutingContext;
  * A JAX-RS filter that computes the REST.request metrics from REST traffic over time.
  * This one depends on Vert.x to be able to hook into response even in cases when the request ended with an unmapped exception.
  */
-public class QuarkusJaxRsMetricsFilter implements ContainerRequestFilter {
+public class QuarkusJaxRsMetricsFilter implements ContainerRequestFilter, ContainerResponseFilter {
 
     @Context
     ResourceInfo resourceInfo;
@@ -52,6 +54,7 @@ public class QuarkusJaxRsMetricsFilter implements ContainerRequestFilter {
         Long start = System.nanoTime();
         final Class<?> resourceClass = resourceInfo.getResourceClass();
         final Method resourceMethod = resourceInfo.getResourceMethod();
+        maybeCreateMetrics(resourceClass, resourceMethod);
         /*
          * The reason for using a Vert.x handler instead of ContainerResponseFilter is that
          * RESTEasy does not call the response filter for requests that ended up with an unmapped exception.
@@ -59,29 +62,23 @@ public class QuarkusJaxRsMetricsFilter implements ContainerRequestFilter {
          */
         RoutingContext routingContext = CDI.current().select(CurrentVertxRequest.class).get().getCurrent();
         routingContext.addBodyEndHandler(
-                event -> finishRequest(start, resourceClass, resourceMethod));
+                event -> finishRequest(start, resourceClass, resourceMethod, requestContext));
     }
 
-    private void finishRequest(Long start, Class<?> resourceClass, Method resourceMethod) {
+    private void finishRequest(Long start, Class<?> resourceClass, Method resourceMethod,
+            ContainerRequestContext requestContext) {
         long value = System.nanoTime() - start;
-        MetricID metricID = getMetricID(resourceClass, resourceMethod);
-
+        boolean success = requestContext.getProperty("smallrye.metrics.jaxrs.successful") != null;
+        MetricID metricID = getMetricID(resourceClass, resourceMethod, success);
         MetricRegistry registry = MetricRegistries.get(MetricRegistry.Type.BASE);
-        if (!registry.getMetadata().containsKey(metricID.getName())) {
-            // if no metric with this name exists yet, register it
-            Metadata metadata = Metadata.builder()
-                    .withName(metricID.getName())
-                    .withDescription(
-                            "The number of invocations and total response time of this RESTful resource method since the start of the server.")
-                    .withUnit(MetricUnits.NANOSECONDS)
-                    .build();
-            registry.simpleTimer(metadata, metricID.getTagsAsArray());
+        if (success) {
+            registry.simpleTimer(metricID).update(Duration.ofNanos(value));
+        } else {
+            registry.counter(metricID).inc();
         }
-        registry.simpleTimer(metricID.getName(), metricID.getTagsAsArray())
-                .update(Duration.ofNanos(value));
     }
 
-    private MetricID getMetricID(Class<?> resourceClass, Method resourceMethod) {
+    private MetricID getMetricID(Class<?> resourceClass, Method resourceMethod, boolean requestWasSuccessful) {
         Tag classTag = new Tag("class", resourceClass.getName());
         String methodName = resourceMethod.getName();
         String encodedParameterNames = Arrays.stream(resourceMethod.getParameterTypes())
@@ -95,7 +92,40 @@ public class QuarkusJaxRsMetricsFilter implements ContainerRequestFilter {
                 .collect(Collectors.joining("_"));
         String methodTagValue = encodedParameterNames.isEmpty() ? methodName : methodName + "_" + encodedParameterNames;
         Tag methodTag = new Tag("method", methodTagValue);
-        return new MetricID("REST.request", classTag, methodTag);
+        String name = requestWasSuccessful ? "REST.request" : "REST.request.unmappedException.total";
+        return new MetricID(name, classTag, methodTag);
     }
 
+    @Override
+    public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) {
+        // mark the request as successful if it finished without exception or with a mapped exception
+        // if it ended with an unmapped exception, this filter is not called by RESTEasy
+        requestContext.setProperty("smallrye.metrics.jaxrs.successful", true);
+    }
+
+    private void maybeCreateMetrics(Class<?> resourceClass, Method resourceMethod) {
+        MetricRegistry registry = MetricRegistries.get(MetricRegistry.Type.BASE);
+        MetricID success = getMetricID(resourceClass, resourceMethod, true);
+        if (registry.getSimpleTimer(success) == null) {
+            Metadata successMetadata = Metadata.builder()
+                    .withName(success.getName())
+                    .withDescription(
+                            "The number of invocations and total response time of this RESTful " +
+                                    "resource method since the start of the server.")
+                    .withUnit(MetricUnits.NANOSECONDS)
+                    .build();
+            registry.simpleTimer(successMetadata, success.getTagsAsArray());
+        }
+        MetricID failure = getMetricID(resourceClass, resourceMethod, false);
+        if (registry.getCounter(failure) == null) {
+            Metadata failureMetadata = Metadata.builder()
+                    .withName(failure.getName())
+                    .withDisplayName("Total Unmapped Exceptions count")
+                    .withDescription(
+                            "The total number of unmapped exceptions that occurred from this RESTful resource " +
+                                    "method since the start of the server.")
+                    .build();
+            registry.counter(failureMetadata, failure.getTagsAsArray());
+        }
+    }
 }
