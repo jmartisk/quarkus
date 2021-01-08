@@ -19,7 +19,7 @@ import org.eclipse.microprofile.metrics.annotation.Timed;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.DotName;
 
-import io.smallrye.metrics.interceptors.MetricsBinding;
+import io.smallrye.metrics.legacyapi.interceptors.MetricsBinding;
 
 public class SmallRyeMetricsDotNames {
 

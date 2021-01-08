@@ -11,6 +11,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -20,6 +21,7 @@ import io.quarkus.test.QuarkusUnitTest;
  * Verify that metrics are registered correctly for inherited default methods when a bean is annotated with a
  * metric annotation.
  */
+@Disabled // TODO: MP Metrics annotations not supported yet
 public class DefaultMethodTest {
 
     @RegisterExtension
