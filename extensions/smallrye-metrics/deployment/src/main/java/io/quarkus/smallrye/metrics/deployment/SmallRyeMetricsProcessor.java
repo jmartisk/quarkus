@@ -77,6 +77,7 @@ import io.quarkus.smallrye.metrics.deployment.spi.MetricsConfigurationBuildItem;
 import io.quarkus.smallrye.metrics.runtime.MetadataHolder;
 import io.quarkus.smallrye.metrics.runtime.SmallRyeMetricsRecorder;
 import io.quarkus.smallrye.metrics.runtime.TagHolder;
+import io.quarkus.vertx.http.deployment.HttpRootPathBuildItem;
 import io.quarkus.vertx.http.deployment.NonApplicationRootPathBuildItem;
 import io.quarkus.vertx.http.deployment.RouteBuildItem;
 import io.quarkus.vertx.http.deployment.devmode.NotFoundPageDisplayableEndpointBuildItem;
@@ -154,6 +155,7 @@ public class SmallRyeMetricsProcessor {
     void createRoute(BuildProducer<RouteBuildItem> routes,
             SmallRyeMetricsRecorder recorder,
             NonApplicationRootPathBuildItem frameworkRoot,
+            HttpRootPathBuildItem httpRoot,
             BuildProducer<NotFoundPageDisplayableEndpointBuildItem> displayableEndpoints,
             LaunchModeBuildItem launchModeBuildItem) {
         Function<Router, Route> route = recorder.route(metrics.path + (metrics.path.endsWith("/") ? "*" : "/*"));
@@ -165,13 +167,13 @@ public class SmallRyeMetricsProcessor {
         }
         routes.produce(new RouteBuildItem.Builder()
                 .routeFunction(route)
-                .handler(recorder.handler(frameworkRoot.adjustPath(metrics.path)))
+                .handler(recorder.handler(httpRoot.adjustPath(frameworkRoot.adjustPath(metrics.path))))
                 .blockingRoute()
                 .nonApplicationRoute()
                 .build());
         routes.produce(new RouteBuildItem.Builder()
                 .routeFunction(slash)
-                .handler(recorder.handler(frameworkRoot.adjustPath(metrics.path)))
+                .handler(recorder.handler(httpRoot.adjustPath(frameworkRoot.adjustPath(metrics.path))))
                 .blockingRoute()
                 .nonApplicationRoute()
                 .build());
