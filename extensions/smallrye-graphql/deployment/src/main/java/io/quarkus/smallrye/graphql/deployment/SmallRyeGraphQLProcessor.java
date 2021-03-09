@@ -1,9 +1,12 @@
 package io.quarkus.smallrye.graphql.deployment;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -268,6 +271,7 @@ public class SmallRyeGraphQLProcessor {
         classes.add(graphql.schema.GraphQLSchema.class);
         classes.add(graphql.schema.GraphQLTypeReference.class);
         classes.add(List.class);
+        classes.add(Collection.class);
         return classes.toArray(new Class[] {});
     }
 
@@ -347,21 +351,55 @@ public class SmallRyeGraphQLProcessor {
             Optional<MetricsCapabilityBuildItem> metricsCapability,
             SmallRyeGraphQLConfig graphQLConfig,
             BuildProducer<SystemPropertyBuildItem> systemProperties,
-            BuildProducer<UnremovableBeanBuildItem> unremovableBeans) {
+            BuildProducer<UnremovableBeanBuildItem> unremovableBeans,
+            BuildProducer<GeneratedResourceBuildItem> resourceProducer,
+            BuildProducer<ServiceProviderBuildItem> serviceProviders) throws IOException {
 
         boolean activate = shouldActivateService(capabilities,
                 graphQLConfig.metricsEnabled,
                 metricsCapability.isPresent(),
-                "quarkus-smallrye-metrics",
+                "quarkus-smallrye-metrics or quarkus-micrometer",
                 "metrics",
                 "quarkus.smallrye-graphql.metrics.enabled");
-        if (activate) {
-            if (metricsCapability.isPresent() && metricsCapability.get().metricsSupported(MetricsFactory.MP_METRICS)) {
+
+        if (activate && metricsCapability.isPresent()) {
+            String implementationService = null;
+            if (metricsCapability.get().metricsSupported(MetricsFactory.MICROMETER)) {
+                implementationService = "io.smallrye.graphql.cdi.metrics.MicrometerMetricsService";
+            } else if (metricsCapability.get().metricsSupported(MetricsFactory.MP_METRICS)) {
+                implementationService = "io.smallrye.graphql.cdi.metrics.MPMetricsService";
                 unremovableBeans.produce(UnremovableBeanBuildItem.beanClassNames("io.smallrye.metrics.MetricRegistries"));
             }
-            systemProperties.produce(new SystemPropertyBuildItem(ConfigKey.ENABLE_METRICS, TRUE));
+            if (implementationService != null) {
+                systemProperties.produce(new SystemPropertyBuildItem(ConfigKey.ENABLE_METRICS, TRUE));
+                createServiceProvider(Collections.singletonMap(
+                        "io.smallrye.graphql.spi.EventingService",
+                        Collections.singleton(implementationService)),
+                        resourceProducer);
+                LOG.debug("Activating GraphQL metrics using " + implementationService);
+            }
         } else {
             systemProperties.produce(new SystemPropertyBuildItem(ConfigKey.ENABLE_METRICS, FALSE));
+        }
+    }
+
+    private void createServiceProvider(Map<String, Set<String>> map,
+            BuildProducer<GeneratedResourceBuildItem> resourceProducer) throws IOException {
+        for (Map.Entry<String, Set<String>> entry : map.entrySet()) {
+            String serviceName = entry.getKey();
+            try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+                try (OutputStreamWriter w = new OutputStreamWriter(os, StandardCharsets.UTF_8)) {
+                    for (String implName : entry.getValue()) {
+                        w.write(implName);
+                        w.write(System.lineSeparator());
+                    }
+                    w.flush();
+                }
+                resourceProducer.produce(
+                        new GeneratedResourceBuildItem(
+                                "META-INF/services/" + serviceName,
+                                os.toByteArray()));
+            }
         }
     }
 
