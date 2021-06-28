@@ -26,6 +26,7 @@ import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.NativeImageProxyDefinitionBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveHierarchyBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.ReflectiveMethodBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ServiceProviderBuildItem;
 import io.quarkus.smallrye.graphql.client.runtime.GraphQLClientsConfig;
 import io.quarkus.smallrye.graphql.client.runtime.SmallRyeGraphQLClientRecorder;
@@ -74,7 +75,8 @@ public class SmallRyeGraphQLClientProcessor {
             SmallRyeGraphQLClientRecorder recorder,
             BuildProducer<ReflectiveClassBuildItem> reflectiveClass,
             BuildProducer<ReflectiveHierarchyBuildItem> reflectiveHierarchies,
-            BuildProducer<NativeImageProxyDefinitionBuildItem> proxies) throws ClassNotFoundException {
+            BuildProducer<NativeImageProxyDefinitionBuildItem> proxies,
+            BuildProducer<ReflectiveMethodBuildItem> reflectiveMethods) throws ClassNotFoundException {
         for (AnnotationInstance annotation : index.getIndex().getAnnotations(GRAPHQL_CLIENT_API)) {
             ClassInfo apiClassInfo = annotation.target().asClass();
             Class<?> apiClass = Class.forName(apiClassInfo.name().toString(), true,
@@ -82,8 +84,9 @@ public class SmallRyeGraphQLClientProcessor {
             proxies.produce(new NativeImageProxyDefinitionBuildItem(apiClass.getName()));
 
             // register the api class and all classes that it references for reflection
-            reflectiveClass.produce(new ReflectiveClassBuildItem(false, false, apiClassInfo.name().toString()));
+            reflectiveClass.produce(new ReflectiveClassBuildItem(true, false, apiClassInfo.name().toString()));
             for (MethodInfo method : apiClassInfo.methods()) {
+                reflectiveMethods.produce(new ReflectiveMethodBuildItem(method));
                 reflectiveHierarchies.produce(new ReflectiveHierarchyBuildItem.Builder()
                         .type(method.returnType())
                         .build());
@@ -107,6 +110,9 @@ public class SmallRyeGraphQLClientProcessor {
         reflectiveClass.produce(ReflectiveClassBuildItem.builder("java.net.URI").methods(true).build());
         reflectiveClass.produce(ReflectiveClassBuildItem.builder("java.util.List").methods(true).build());
         reflectiveClass.produce(ReflectiveClassBuildItem.builder("java.util.Collection").methods(true).build());
+
+        // TODO: is this necessary?
+        reflectiveClass.produce(ReflectiveClassBuildItem.builder("org.eclipse.microprofile.graphql.NonNull").build());
     }
 
     @BuildStep
