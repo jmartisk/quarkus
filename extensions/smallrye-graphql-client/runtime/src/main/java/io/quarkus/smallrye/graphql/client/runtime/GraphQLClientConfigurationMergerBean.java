@@ -13,14 +13,13 @@ import io.smallrye.graphql.client.GraphQLClientsConfiguration;
  * On startup, this beans takes Quarkus-specific configuration of GraphQL clients (quarkus.* properties)
  * and merges this configuration with the configuration parsed by SmallRye GraphQL itself (CLIENT/mp-graphql/* properties)
  *
- * The resulting merged configuration resides in the application-scoped `io.smallrye.graphql.client.GraphQLClientConfiguration`
+ * The resulting merged configuration resides in `io.smallrye.graphql.client.GraphQLClientsConfiguration`
  *
  * Quarkus configuration overrides SmallRye configuration where applicable.
  */
 @Singleton
 public class GraphQLClientConfigurationMergerBean {
 
-    @Inject
     GraphQLClientsConfiguration upstreamConfiguration;
 
     @Inject
@@ -31,6 +30,7 @@ public class GraphQLClientConfigurationMergerBean {
 
     @PostConstruct
     void enhanceGraphQLConfiguration() {
+        upstreamConfiguration = GraphQLClientsConfiguration.getInstance();
         for (Map.Entry<String, GraphQLClientConfig> client : quarkusConfiguration.clients.entrySet()) {
             // the raw config key provided in the config, this might be a short class name,
             // so translate that into the fully qualified name if applicable
