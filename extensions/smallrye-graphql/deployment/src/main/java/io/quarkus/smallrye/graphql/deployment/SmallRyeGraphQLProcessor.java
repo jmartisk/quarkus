@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -14,14 +15,23 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.json.bind.annotation.JsonbCreator;
+
 import org.eclipse.microprofile.config.ConfigProvider;
+import org.jboss.jandex.AnnotationTarget;
+import org.jboss.jandex.ClassInfo;
+import org.jboss.jandex.IndexView;
 import org.jboss.jandex.Indexer;
+import org.jboss.jandex.MethodInfo;
 import org.jboss.logging.Logger;
 
+import graphql.com.google.common.collect.Streams;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
+import io.quarkus.arc.deployment.AnnotationsTransformerBuildItem;
 import io.quarkus.arc.deployment.BeanContainerBuildItem;
 import io.quarkus.arc.deployment.BeanDefiningAnnotationBuildItem;
 import io.quarkus.arc.deployment.UnremovableBeanBuildItem;
+import io.quarkus.arc.processor.AnnotationsTransformer;
 import io.quarkus.bootstrap.model.AppArtifact;
 import io.quarkus.deployment.Capabilities;
 import io.quarkus.deployment.Capability;
@@ -214,6 +224,69 @@ public class SmallRyeGraphQLProcessor {
 
         // Make sure the GraphQL Java classes needed for introspection can work in native mode
         reflectiveClassProducer.produce(new ReflectiveClassBuildItem(true, true, getGraphQLJavaClasses()));
+
+        // FIXME REMOVE
+        System.out.println("INPUT TYPES: "
+                + schema.getInputs().values().stream().map(Reference::getClassName).collect(Collectors.toList()));
+    }
+
+    // For input types implemented as Java records, append @JsonbConstructor to their canonical constructor.
+    // This allows the JSON-B implementation to unmarshal them. Only needed until we use a JSON-B implementation
+    // that properly supports Java records.
+    @BuildStep
+    void supportRecordInput(BuildProducer<AnnotationsTransformerBuildItem> transformers,
+            CombinedIndexBuildItem combinedIndex) {
+        // Find all input types. We can't just use the schema for this because the schema is built after annotation transforming.
+        IndexView index = combinedIndex.getIndex();
+        List<ClassInfo> recordsUsedAsInputs = Streams.concat(
+                index.getAnnotations(Annotations.QUERY).stream(),
+                index.getAnnotations(Annotations.MUTATION).stream(),
+                index.getAnnotations(Annotations.SUBCRIPTION).stream())
+                .map(anno -> anno.target().asMethod())
+                .flatMap(method -> method.parameters().stream())
+                .filter(type -> type.kind() == org.jboss.jandex.Type.Kind.CLASS)
+                .map(type -> index.getClassByName(type.name()))
+                .filter(clazz -> clazz.isRecord())
+                .collect(Collectors.toCollection(ArrayList::new));
+        // TODO recursively look through classes to find more inputs (their fields)
+
+        List<MethodInfo> canonicalConstructors = new ArrayList<>();
+        for (ClassInfo recordClass : recordsUsedAsInputs) {
+            // for each input record, find the canonical constructor
+            // annotate it with JsonbCreator only if there is no such annotation anywhere else in that class
+            if (!recordClass.annotations().containsKey(Annotations.JSONB_CREATOR)) {
+                canonicalConstructors.addAll(recordClass.constructors());
+            }
+        }
+
+        //            .map(annotation -> annotation.target().asClass())  // all GraphQLApi classes
+        //            .flatMap(clazz -> clazz.methods().stream()) // all
+        //            .flatMap(clazz -> clazz.fields().stream())
+        //        List<DotName> recordsUsedAsInputs = new ArrayList<>();
+        System.out.println("RECORDS USED AS INPUTS: " + recordsUsedAsInputs);
+        System.out.println("CONSTRUCTORS TO ANNOTATE: " + canonicalConstructors);
+        //        List<DotName> recordsUsedAsInputs = schema.getInputs().values().stream()
+        //                .map(input -> DotName.createSimple(input.getClassName()))
+        //                .filter(dotName -> overridableIndex.getClassByName(dotName).isRecord())
+        //                .collect(Collectors.toList());
+        if (!recordsUsedAsInputs.isEmpty()) {
+            transformers.produce(new AnnotationsTransformerBuildItem(new AnnotationsTransformer() {
+
+                @Override
+                public boolean appliesTo(AnnotationTarget.Kind kind) {
+                    return kind == AnnotationTarget.Kind.METHOD;
+                }
+
+                @Override
+                public void transform(TransformationContext ctx) {
+                    MethodInfo method = ctx.getTarget().asMethod();
+                    if (canonicalConstructors.contains(method)) {
+                        System.out.println("TRANSFORMING:: " + method);
+                        ctx.transform().add(JsonbCreator.class).done();
+                    }
+                }
+            }));
+        }
     }
 
     @Record(ExecutionTime.RUNTIME_INIT)
