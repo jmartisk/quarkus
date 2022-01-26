@@ -101,4 +101,11 @@ public class GraphQLClientConfig {
     @ConfigItem
     public Optional<Integer> maxRedirects;
 
+    /**
+     * Maximum time (in milliseconds) allowed between initializing a subscription websocket and receiving
+     * a subscription start acknowledgement from the server.
+     */
+    @ConfigItem
+    public Optional<Integer> subscriptionInitializationTimeout;
+
 }
