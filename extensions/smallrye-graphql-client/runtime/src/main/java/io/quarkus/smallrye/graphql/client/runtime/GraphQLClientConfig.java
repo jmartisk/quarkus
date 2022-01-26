@@ -95,4 +95,10 @@ public class GraphQLClientConfig {
     @ConfigItem
     public Optional<String> proxyPassword;
 
+    /**
+     * Maximum number of redirects to follow.
+     */
+    @ConfigItem
+    public Optional<Integer> maxRedirects;
+
 }

@@ -32,7 +32,8 @@ public class GraphQLClientConfigurationTest {
                                             "quarkus.smallrye-graphql-client.client1.proxy-host=myproxy\n" +
                                             "quarkus.smallrye-graphql-client.client1.proxy-port=1234\n" +
                                             "quarkus.smallrye-graphql-client.client1.proxy-username=dave\n" +
-                                            "quarkus.smallrye-graphql-client.client1.proxy-password=secret\n"),
+                                            "quarkus.smallrye-graphql-client.client1.proxy-password=secret\n" +
+                                            "quarkus.smallrye-graphql-client.client1.max-redirects=6\n"),
                             "application.properties")
                     .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml"));
 
@@ -54,5 +55,11 @@ public class GraphQLClientConfigurationTest {
         assertEquals(1234, config.getProxyPort());
         assertEquals("dave", config.getProxyUsername());
         assertEquals("secret", config.getProxyPassword());
+    }
+
+    @Test
+    public void checkMaxRedirects() {
+        GraphQLClientConfiguration config = GraphQLClientsConfiguration.getInstance().getClient("client1");
+        assertEquals(6, config.getMaxRedirects());
     }
 }
