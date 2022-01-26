@@ -71,4 +71,28 @@ public class GraphQLClientConfig {
     @ConfigItem
     public Optional<String> keyStoreType;
 
+    /**
+     * Hostname of the proxy to use.
+     */
+    @ConfigItem
+    public Optional<String> proxyHost;
+
+    /**
+     * Port number of the proxy to use.
+     */
+    @ConfigItem
+    public Optional<Integer> proxyPort;
+
+    /**
+     * Username for the proxy to use.
+     */
+    @ConfigItem
+    public Optional<String> proxyUsername;
+
+    /**
+     * Password for the proxy to use.
+     */
+    @ConfigItem
+    public Optional<String> proxyPassword;
+
 }

@@ -69,6 +69,10 @@ public class GraphQLClientConfigurationMergerBean {
         quarkusConfig.trustStore.ifPresent(transformed::setTrustStore);
         quarkusConfig.trustStoreType.ifPresent(transformed::setTrustStoreType);
         quarkusConfig.trustStorePassword.ifPresent(transformed::setTrustStorePassword);
+        quarkusConfig.proxyHost.ifPresent(transformed::setProxyHost);
+        quarkusConfig.proxyPort.ifPresent(transformed::setProxyPort);
+        quarkusConfig.proxyUsername.ifPresent(transformed::setProxyUsername);
+        quarkusConfig.proxyPassword.ifPresent(transformed::setProxyPassword);
         return transformed;
     }
 
