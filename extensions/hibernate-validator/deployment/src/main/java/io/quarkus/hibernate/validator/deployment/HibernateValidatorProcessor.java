@@ -158,6 +158,11 @@ class HibernateValidatorProcessor {
             // The CDI interceptor which will validate the methods annotated with @JaxrsEndPointValidated
             additionalBeans.produce(new AdditionalBeanBuildItem(
                     "io.quarkus.hibernate.validator.runtime.jaxrs.ResteasyReactiveEndPointValidationInterceptor"));
+            // TODO:::: we need to provide a LocaleResolver that works with graphql
+            // problem is that hibernate-validator expects only one bean that implements LocaleResolver
+            // see: HibernateValidatorRecorder.java:57
+            // so we will need to wrap the logic for all resteasy-classic, resteasy-reactive, graphql (and potentially more)
+            // by a single bean that implements LocaleResolver
             additionalBeans.produce(new AdditionalBeanBuildItem(
                     "io.quarkus.hibernate.validator.runtime.jaxrs.ResteasyReactiveContextLocaleResolver"));
         }
