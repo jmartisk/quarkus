@@ -5,7 +5,7 @@
     <parent>
         <artifactId>quarkus-jsonp-parent</artifactId>
         <groupId>io.quarkus</groupId>
-        <version>999-SNAPSHOT</version>
+        <version>999-jakarta-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -18,7 +18,7 @@
             <artifactId>quarkus-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.glassfish</groupId>
+            <groupId>org.eclipse.parsson</groupId>
             <artifactId>jakarta.json</artifactId>
         </dependency>
     </dependencies>
@@ -34,7 +34,7 @@
                         <excludedArtifact>org.glassfish:javax.json</excludedArtifact>
                     </excludedArtifacts>
                     <parentFirstArtifacts>
-                        <parentFirstArtifact>org.glassfish:jakarta.json</parentFirstArtifact>
+                        <parentFirstArtifact>org.eclipse.parsson:jakarta.json</parentFirstArtifact>
                         <parentFirstArtifact>jakarta.json:jakarta.json-api</parentFirstArtifact>
                     </parentFirstArtifacts>
                 </configuration>
