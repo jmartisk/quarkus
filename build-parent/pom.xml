@@ -176,8 +176,6 @@
 
         <!-- google cloud functions invoker-->
         <gcf-invoker.version>1.1.1</gcf-invoker.version>
-        <owasp-dependency-check-plugin.version>8.1.2</owasp-dependency-check-plugin.version>
-
         <!-- Jakarta JMS API -->
         <jakarta.jms-api.version>3.1.0</jakarta.jms-api.version>
     </properties>
@@ -719,18 +717,6 @@
                     </executions>
                 </plugin>
                 <plugin>
-                    <groupId>org.owasp</groupId>
-                    <artifactId>dependency-check-maven</artifactId>
-                    <version>${owasp-dependency-check-plugin.version}</version>
-                    <configuration>
-                        <!-- Disable Net Analyzer -->
-                        <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
-                        <nugetconfAnalyzerEnabled>false</nugetconfAnalyzerEnabled>
-                        <nuspecAnalyzerEnabled>false</nuspecAnalyzerEnabled>
-                        <retireJsAnalyzerEnabled>false</retireJsAnalyzerEnabled>
-                    </configuration>
-                </plugin>
-                <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-plugin-plugin</artifactId>
                     <version>${maven-plugin-plugin.version}</version>
@@ -745,6 +731,18 @@
                             </goals>
                         </execution>
                     </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.owasp</groupId>
+                    <artifactId>dependency-check-maven</artifactId>
+                    <version>${owasp-dependency-check-plugin.version}</version>
+                    <configuration>
+                        <!-- Disable Net Analyzer -->
+                        <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
+                        <nugetconfAnalyzerEnabled>false</nugetconfAnalyzerEnabled>
+                        <nuspecAnalyzerEnabled>false</nuspecAnalyzerEnabled>
+                        <retireJsAnalyzerEnabled>false</retireJsAnalyzerEnabled>
+                    </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -1264,17 +1262,6 @@
                         </executions>
                     </plugin>
                 </plugins>
-            </build>
-        </profile>
-        <profile>
-            <id>owasp-check</id>
-            <activation>
-                <property>
-                    <name>owasp-check</name>
-                </property>
-            </activation>
-            <build>
-                <defaultGoal>dependency-check:check</defaultGoal>
             </build>
         </profile>
         <profile>
