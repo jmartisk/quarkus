@@ -1,0 +1,35 @@
+name: "OWASP Dependency Check"
+
+on:
+
+  schedule:
+    - cron: '0 3 * * 0'
+
+jobs:
+  owasp:
+    name: OWASP Dependency Check Report
+    runs-on: ubuntu-latest
+    if: github.repository == 'quarkusio/quarkus'
+
+    strategy:
+      fail-fast: false
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 1
+        ref: main
+    - name: Setup Java JDK
+      uses: actions/setup-java@v3
+      with:
+        distribution: temurin
+        java-version: 11
+
+
+    - name: Build Java
+      run: ./mvnw -B --settings .github/mvn-settings.xml -Dquickly-ci install
+
+    - name: Perform OWASP Dependency Check Report
+      run: ./mvnw -Dowasp-report
+
