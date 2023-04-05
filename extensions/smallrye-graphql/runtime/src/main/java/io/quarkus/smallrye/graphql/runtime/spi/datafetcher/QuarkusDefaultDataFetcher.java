@@ -79,6 +79,7 @@ public class QuarkusDefaultDataFetcher<K, T> extends DefaultDataFetcher<K, T> {
                 Object resultFromMethodCall = operationInvoker.invoke(transformedArguments);
                 Object resultFromTransform = fieldHelper.transformOrAdaptResponse(resultFromMethodCall, dfe);
                 resultBuilder.data(resultFromTransform);
+                eventEmitter.fireAfterDataFetch(c);
                 return (T) resultBuilder.build();
             } catch (AbstractDataFetcherException te) {
                 te.appendDataFetcherResult(resultBuilder, dfe);
