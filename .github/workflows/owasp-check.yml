@@ -1,15 +1,13 @@
 name: "OWASP Dependency Check"
 
 on:
-
-  schedule:
-    - cron: '0 3 * * 0'
+  workflow_dispatch:
 
 jobs:
   owasp:
     name: OWASP Dependency Check Report
     runs-on: ubuntu-latest
-    if: github.repository == 'quarkusio/quarkus'
+#    if: github.repository == 'quarkusio/quarkus'
 
     strategy:
       fail-fast: false
