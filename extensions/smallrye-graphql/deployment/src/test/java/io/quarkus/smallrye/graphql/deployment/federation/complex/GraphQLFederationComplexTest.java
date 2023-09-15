@@ -2,8 +2,6 @@ package io.quarkus.smallrye.graphql.deployment.federation.complex;
 
 import static org.hamcrest.Matchers.containsString;
 
-import jakarta.inject.Inject;
-
 import org.hamcrest.CoreMatchers;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;

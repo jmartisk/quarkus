@@ -1117,6 +1117,42 @@ The `quarkus-oidc-token-propagation-reactive` extension provides `io.quarkus.oid
 The `quarkus-oidc-token-propagation-reactive` extension (as opposed to the non-reactive `quarkus-oidc-token-propagation` extension) does not currently support the exchanging or resigning the tokens before the propagation.
 However, these features may be added in the future.
 
+[[oidc-client-graphql-client]]
+== GraphQL client integration
+
+The `quarkus-oidc-client-graphql` extension provides a way to integrate an
+OIDC client into GraphQL clients. This works similarly as with REST clients.
+When this extension is present, any configured (that means NOT created
+programmatically via the builder, but via configuration properties) GraphQL
+client will attempt to use the OIDC client to obtain the value of the
+`Authorization` header.
+
+To configure which OIDC client should be used by GraphQL clients, use
+
+----
+quarkus.oidc-client-graphql.client-name=OIDC_CLIENT_NAME
+----
+
+For typesafe GraphQL clients, you can override this on a per-client basis by annotating
+the `GraphQLClientApi` interface with `@OidcClientFilter("OIDC_CLIENT_NAME")`.
+
+To be able to use this with a programmatically created GraphQL client, both
+builders (`VertxDynamicGraphQLClientBuilder` and
+`VertxTypesafeGraphQLClientBuilder`) contain a method `dynamicHeader(String,
+Uni<String>`) that allows you to plug in a header that might change for
+every request. To plug an OIDC client into it, use
+
+```
+@Inject
+OidcClients oidcClients;
+
+VertxTypesafeGraphQLClientBuilder builder = ....;
+Uni<String> tokenUni = clients.getClient("OIDC_CLIENT_NAME")
+    .getTokens().map(t -> "Bearer " + t.getAccessToken());
+builder.dynamicHeader("Authorization", tokenUni);
+... = builder.build();
+```
+
 == References
 
 * xref:security-openid-connect-client.adoc[OpenID Connect Client and Token Propagation Quickstart]
