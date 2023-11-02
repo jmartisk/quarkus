@@ -214,4 +214,11 @@ public class SmallRyeGraphQLConfig {
     @ConfigItem
     @ConfigDocSection
     public SmallRyeGraphQLUIConfig ui;
+
+    /**
+     * Additional scalars to add to the schema. The key is the name of the scalar type,
+     * the value is the class that implements the scalar.
+     */
+    @ConfigItem
+    public Optional<List<ExtraScalar>> extraScalars;
 }
