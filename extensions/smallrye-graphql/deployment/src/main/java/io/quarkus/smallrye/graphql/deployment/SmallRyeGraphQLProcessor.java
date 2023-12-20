@@ -17,6 +17,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import io.smallrye.graphql.api.CustomFloatScalar;
+import io.smallrye.graphql.api.CustomIntScalar;
+import io.smallrye.graphql.api.CustomStringScalar;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
@@ -286,6 +289,9 @@ public class SmallRyeGraphQLProcessor {
             indexer.indexClass(Inaccessible.class);
             indexer.indexClass(io.smallrye.graphql.api.federation.Override.class);
             indexer.indexClass(Tag.class);
+            indexer.indexClass(CustomStringScalar.class);
+            indexer.indexClass(CustomIntScalar.class);
+            indexer.indexClass(CustomFloatScalar.class);
         } catch (IOException ex) {
             LOG.warn("Failure while creating index", ex);
         }
