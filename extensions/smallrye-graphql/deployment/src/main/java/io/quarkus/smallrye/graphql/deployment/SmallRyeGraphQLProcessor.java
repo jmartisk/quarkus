@@ -17,6 +17,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import io.smallrye.graphql.api.federation.link.Import;
+import io.smallrye.graphql.api.federation.link.Link;
+import io.smallrye.graphql.api.federation.link.Purpose;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
@@ -288,6 +291,9 @@ public class SmallRyeGraphQLProcessor {
             indexer.indexClass(io.smallrye.graphql.api.federation.Override.class);
             indexer.indexClass(Tag.class);
             indexer.indexClass(OneOf.class);
+            indexer.indexClass(Import.class);
+            indexer.indexClass(Link.class);
+            indexer.indexClass(Purpose.class);
         } catch (IOException ex) {
             LOG.warn("Failure while creating index", ex);
         }
