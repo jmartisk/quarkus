@@ -106,7 +106,7 @@ For more information about pool size adjustment properties, see the <<jdbc-confi
 
 ifndef::no-quarkus-reactive-db2-client[]
 * `quarkus-reactive-db2-client`
-endif::no-quarkus-reactive-db2-client[]
+ifndef::no-quarkus-reactive-db2-client[]
 * `quarkus-reactive-mssql-client`
 * `quarkus-reactive-mysql-client`
 * `quarkus-reactive-oracle-client`
