@@ -6,8 +6,10 @@ import java.util.List;
 
 import jakarta.inject.Inject;
 
+import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -25,10 +27,13 @@ public class TypesafeGraphQLClientFQNameTest {
     static String url = "http://" + System.getProperty("quarkus.http.host", "localhost") + ":" +
             System.getProperty("quarkus.http.test-port", "8081") + "/graphql";
 
+    static JavaArchive dependency = ShrinkWrap.create(JavaArchive.class)
+            .addClasses(TestingGraphQLClientApiWithNoConfigKey.class, Person.class);
+
     @RegisterExtension
     static QuarkusUnitTest test = new QuarkusUnitTest()
             .withApplicationRoot((jar) -> jar
-                    .addClasses(TestingGraphQLApi.class, TestingGraphQLClientApiWithNoConfigKey.class, Person.class,
+                    .addClasses(TestingGraphQLApi.class, Person.class,
                             PersonDto.class)
                     .addAsResource(
                             new StringAsset(
@@ -36,7 +41,8 @@ public class TypesafeGraphQLClientFQNameTest {
                                             "client.deployment.model.TestingGraphQLClientApiWithNoConfigKey\".url="
                                             + url),
                             "application.properties")
-                    .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml"));
+                    .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml"))
+            .addAdditionalDependency(dependency);
 
     @Inject
     TestingGraphQLClientApiWithNoConfigKey client;
